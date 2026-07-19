@@ -100,6 +100,7 @@ const fsm = StateMachine.create({
       onEnter() {
         setLabel("Pronto para pescar");
         setHint("↕", "Incline para frente para lançar");
+        a11y.vibrate([60, 40, 60]);   // feedback tátil: pronto pra lançar de novo
         speak("Incline o celular para frente para lançar a isca.");
         ui.tensionContainer().classList.add("hidden");
         ui.btnStart().style.display = "block";
@@ -141,7 +142,10 @@ const fsm = StateMachine.create({
         a11y.vibrate("bite");
 
         fsm.after(currentFish.biteWindowMs, () => {
-          if (fsm.is("BITING")) fsm.send("miss");
+          if (fsm.is("BITING")) {
+            a11y.vibrate([200, 100, 200]);  // feedback tátil: peixe escapou
+            fsm.send("miss");
+          }
         });
       },
     },
