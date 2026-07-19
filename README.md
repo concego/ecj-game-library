@@ -23,40 +23,82 @@ Biblioteca modular de mecânicas reutilizáveis para jogos acessíveis — parte
 
 ## Módulos
 
-### Sensores e Acessibilidade
+### ECJ Motion Systems
+*O coração da biblioteca — o que a diferencia de qualquer outra.*
+
 | Módulo | Descrição |
 |---|---|
 | `SensorKit` | Acelerômetro, giroscópio e shake — browser e Capacitor |
-| `AccessibilityLayer` | Anúncios TalkBack/NVDA (speak) e vibração tátil |
-
-### Mecânicas de Ação
-| Módulo | Descrição |
-|---|---|
-| `TensionSystem` | Sistema de tensão jogador vs. oponente (pesca, cabo de guerra...) |
-| `TimedStrike` | Janela de oportunidade + reação: caça, emboscada, pesca primitiva etc. |
-| `RhythmTilt` | Inclinação ritmada: mineração, remo, serrar, forjar, bombear etc. |
-| `TiltCompass` | Tilt → direção cardinal (N/S/E/W) — vira o personagem no grid |
+| `TensionSystem` | Tensão jogador vs. oponente: pesca, cabo de guerra, puxar porta pesada... |
+| `RhythmTilt` | Inclinação ritmada: mineração, remo, serrar, forjar, bombear... |
+| `TiltCompass` | Tilt → direção cardinal N/S/E/W — vira o personagem no grid |
+| `TimedStrike` | Janela de oportunidade + reação: caça, emboscada, pesca primitiva... |
+| `InteractionSequence` | Sequências de gestos: abrir fechaduras, lançar magia, rituais, armadilhas... |
 
 ### Mundo e Recursos
+
 | Módulo | Descrição |
 |---|---|
 | `GridMap` | Posição, direção, distância, cone de visão e detecção em grid 2D |
-| `ResourceNode` | Nós de recursos: HP, ferramenta, drops ponderados, bioma, respawn |
+| `ResourceNode` | Nós de recurso: HP, ferramenta, drops ponderados, bioma, respawn |
 | `CreatureProfile` | Sorteio ponderado de criaturas/oponentes |
 
 ### Sorte e Aleatoriedade
+
 | Módulo | Descrição |
 |---|---|
 | `CardDeck` | Baralho genérico: embaralha, compra, descarta, devolve |
-| `DiceRoller` | Dados configuráveis: qualquer face, quantidade, modificador, vantagem |
-| `Roulette` | Roleta com tilt: gira com tilt pra frente, para com segundo tilt |
+| `DiceRoller` | Dados configuráveis: qualquer face, quantidade, modificador, vantagem/desvantagem |
+| `Roulette` | Roleta com tilt: gira com tilt pra frente, para com segundo tilt + delay de desaceleração |
 
-### Progressão
+### Acessibilidade
+
 | Módulo | Descrição |
 |---|---|
+| `AccessibilityLayer` | Anúncios TalkBack/NVDA (speak) e vibração tátil |
+
+### Core Systems
+*Infraestrutura genérica — útil em qualquer jogo.*
+
+| Módulo | Descrição |
+|---|---|
+| `StateMachine` | Máquina de estados genérica com timers integrados |
 | `ScoreSystem` | Pontuação, highscore (localStorage), combos e multiplicadores |
 | `TimerCountdown` | Temporizador regressivo com pausa, bônus de tempo e urgência |
-| `StateMachine` | Máquina de estados genérica com timers integrados |
+
+---
+
+## InteractionSequence — referência rápida
+
+```js
+// Sequência: shake → tilt_left → tilt_right (ex: abrir uma fechadura)
+const lock = InteractionSequence.create({
+  sequence: [
+    { gesture: "shake"      },
+    { gesture: "tilt_left",  timeoutMs: 2000 },
+    { gesture: "tilt_right", timeoutMs: 2000 },
+  ],
+  globalTimeoutMs: 6000,
+  strict: true,   // gesto errado = falha
+});
+
+lock.on("started",   ()                       => { /* primeiro gesto correto */ });
+lock.on("progress",  ({ step, total })        => { /* feedback de progresso  */ });
+lock.on("completed", ({ elapsed })            => { /* porta aberta!          */ });
+lock.on("failed",    ({ expected, received }) => { /* gesto errado           */ });
+lock.on("timeout",   ({ step })               => { /* tempo esgotado         */ });
+
+// Integração com SensorKit
+SensorKit.on("shake",     () => lock.input("shake"));
+SensorKit.on("tiltLeft",  () => lock.input("tilt_left"));
+SensorKit.on("tiltRight", () => lock.input("tilt_right"));
+
+// Atalho para sequências simples
+const combo = InteractionSequence.fromGestures(
+  ["tilt_forward", "shake", "tilt_left"],
+  { globalTimeoutMs: 5000 }
+);
+```
 
 ---
 
@@ -77,9 +119,8 @@ EXTRAÇÃO (ResourceNode + RhythmTilt)
   ResourceNode verifica ferramenta, remove HP, sorteia drop
   RhythmTilt executa a mecânica de coleta
          ↓
-COMBATE (TensionSystem + TimedStrike)
-  Intenção definida pelo item ativo
-  Minigame correspondente é lançado
+COMBATE / INTERAÇÃO (TensionSystem + TimedStrike + InteractionSequence)
+  Tensão, janelas de reação ou sequências de gestos
   ScoreSystem e TimerCountdown integrados
          ↓
 RECOMPENSA (CardDeck | DiceRoller | Roulette)
@@ -100,24 +141,25 @@ games/                ← minigames de teste (branch: gh-pages)
 
 ---
 
-## Uso rápido
+## Uso
 
 ```js
-import { SensorKit }          from "./lib/SensorKit.js";
-import { AccessibilityLayer } from "./lib/AccessibilityLayer.js";
-import { StateMachine }       from "./lib/StateMachine.js";
-import { TensionSystem }      from "./lib/TensionSystem.js";
-import { TimedStrike }        from "./lib/TimedStrike.js";
-import { RhythmTilt }         from "./lib/RhythmTilt.js";
-import { TiltCompass }        from "./lib/TiltCompass.js";
-import { GridMap }            from "./lib/GridMap.js";
-import { CreatureProfile }    from "./lib/CreatureProfile.js";
-import { ResourceNode }       from "./lib/ResourceNode.js";
-import { CardDeck }           from "./lib/CardDeck.js";
-import { DiceRoller }         from "./lib/DiceRoller.js";
-import { Roulette }           from "./lib/Roulette.js";
-import { ScoreSystem }        from "./lib/ScoreSystem.js";
-import { TimerCountdown }     from "./lib/TimerCountdown.js";
+import { SensorKit }             from "./lib/SensorKit.js";
+import { AccessibilityLayer }    from "./lib/AccessibilityLayer.js";
+import { StateMachine }          from "./lib/StateMachine.js";
+import { TensionSystem }         from "./lib/TensionSystem.js";
+import { TimedStrike }           from "./lib/TimedStrike.js";
+import { RhythmTilt }            from "./lib/RhythmTilt.js";
+import { TiltCompass }           from "./lib/TiltCompass.js";
+import { InteractionSequence }   from "./lib/InteractionSequence.js";
+import { GridMap }               from "./lib/GridMap.js";
+import { CreatureProfile }       from "./lib/CreatureProfile.js";
+import { ResourceNode }          from "./lib/ResourceNode.js";
+import { CardDeck }              from "./lib/CardDeck.js";
+import { DiceRoller }            from "./lib/DiceRoller.js";
+import { Roulette }              from "./lib/Roulette.js";
+import { ScoreSystem }           from "./lib/ScoreSystem.js";
+import { TimerCountdown }        from "./lib/TimerCountdown.js";
 ```
 
 ### Pré-requisito para AccessibilityLayer
