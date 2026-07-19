@@ -23,20 +23,40 @@ Biblioteca modular de mecânicas reutilizáveis para jogos acessíveis — parte
 
 ## Módulos
 
+### Sensores e Acessibilidade
 | Módulo | Descrição |
 |---|---|
 | `SensorKit` | Acelerômetro, giroscópio e shake — browser e Capacitor |
-| `StateMachine` | Máquina de estados genérica com timers integrados |
-| `TensionSystem` | Sistema de tensão jogador vs. oponente (pesca, cabo de guerra...) |
-| `CreatureProfile` | Sorteio ponderado de criaturas/oponentes |
 | `AccessibilityLayer` | Anúncios TalkBack/NVDA (speak) e vibração tátil |
-| `TimedStrike` | Janela de oportunidade + reação: pesca primitiva, caça com lança, emboscada etc. |
+
+### Mecânicas de Ação
+| Módulo | Descrição |
+|---|---|
+| `TensionSystem` | Sistema de tensão jogador vs. oponente (pesca, cabo de guerra...) |
+| `TimedStrike` | Janela de oportunidade + reação: caça, emboscada, pesca primitiva etc. |
 | `RhythmTilt` | Inclinação ritmada: mineração, remo, serrar, forjar, bombear etc. |
+| `TiltCompass` | Tilt → direção cardinal (N/S/E/W) — vira o personagem no grid |
+
+### Mundo e Recursos
+| Módulo | Descrição |
+|---|---|
+| `GridMap` | Posição, direção, distância, cone de visão e detecção em grid 2D |
+| `ResourceNode` | Nós de recursos: HP, ferramenta, drops ponderados, bioma, respawn |
+| `CreatureProfile` | Sorteio ponderado de criaturas/oponentes |
+
+### Sorte e Aleatoriedade
+| Módulo | Descrição |
+|---|---|
+| `CardDeck` | Baralho genérico: embaralha, compra, descarta, devolve |
+| `DiceRoller` | Dados configuráveis: qualquer face, quantidade, modificador, vantagem |
+| `Roulette` | Roleta com tilt: gira com tilt pra frente, para com segundo tilt |
+
+### Progressão
+| Módulo | Descrição |
+|---|---|
 | `ScoreSystem` | Pontuação, highscore (localStorage), combos e multiplicadores |
 | `TimerCountdown` | Temporizador regressivo com pausa, bônus de tempo e urgência |
-| `TiltCompass` | Tilt → direção cardinal (N/S/E/W) — vira o personagem na exploração de grid |
-| `GridMap` | Posição, direção, distância, cone de visão e detecção em grid 2D |
-| `ResourceNode` | Nós de recursos no grid: HP, ferramenta, drops ponderados, bioma, respawn |
+| `StateMachine` | Máquina de estados genérica com timers integrados |
 
 ---
 
@@ -61,6 +81,9 @@ COMBATE (TensionSystem + TimedStrike)
   Intenção definida pelo item ativo
   Minigame correspondente é lançado
   ScoreSystem e TimerCountdown integrados
+         ↓
+RECOMPENSA (CardDeck | DiceRoller | Roulette)
+  Loot sorteado via carta, dado ou roleta com tilt
 ```
 
 ---
@@ -77,50 +100,30 @@ games/                ← minigames de teste (branch: gh-pages)
 
 ---
 
-## Uso
+## Uso rápido
 
 ```js
 import { SensorKit }          from "./lib/SensorKit.js";
+import { AccessibilityLayer } from "./lib/AccessibilityLayer.js";
 import { StateMachine }       from "./lib/StateMachine.js";
 import { TensionSystem }      from "./lib/TensionSystem.js";
-import { CreatureProfile }    from "./lib/CreatureProfile.js";
-import { AccessibilityLayer } from "./lib/AccessibilityLayer.js";
 import { TimedStrike }        from "./lib/TimedStrike.js";
 import { RhythmTilt }         from "./lib/RhythmTilt.js";
-import { ScoreSystem }        from "./lib/ScoreSystem.js";
-import { TimerCountdown }     from "./lib/TimerCountdown.js";
 import { TiltCompass }        from "./lib/TiltCompass.js";
 import { GridMap }            from "./lib/GridMap.js";
+import { CreatureProfile }    from "./lib/CreatureProfile.js";
 import { ResourceNode }       from "./lib/ResourceNode.js";
+import { CardDeck }           from "./lib/CardDeck.js";
+import { DiceRoller }         from "./lib/DiceRoller.js";
+import { Roulette }           from "./lib/Roulette.js";
+import { ScoreSystem }        from "./lib/ScoreSystem.js";
+import { TimerCountdown }     from "./lib/TimerCountdown.js";
 ```
 
----
+### Pré-requisito para AccessibilityLayer
 
-## ResourceNode — referência rápida
-
-```js
-// Registra um bioma (geração procedural)
-ResourceNode.registerBiome("forest", {
-  hp:           80,
-  requiredTool: "axe",
-  respawnMs:    30000,
-  drops: [
-    { item: "wood",        weight: 10, minPower: 0  },
-    { item: "hardwood",    weight: 3,  minPower: 40 },
-    { item: "rare_resin",  weight: 1,  minPower: 70 },
-  ],
-});
-
-// Cria node a partir do bioma — pronto para geração procedural
-const tree = ResourceNode.fromBiome("forest", { cell: { col: 3, row: 2 } });
-
-tree.on("extracted", ({ item, power, hpRemaining }) => { /* drop sorteado */ });
-tree.on("depleted",  ({ cell }) => { /* remove do mapa visualmente */ });
-tree.on("respawned", ({ cell }) => { /* recoloca no mapa */ });
-
-// Extrai com ferramenta
-tree.extract({ id: "axe", power: 50 });  // power alto → drops melhores, menos tentativas
-tree.extract(null);                       // sem ferramenta → "failed" se requiredTool != null
+```html
+<div id="announcer" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
 ```
 
 ---
