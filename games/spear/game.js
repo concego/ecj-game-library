@@ -1,9 +1,9 @@
 /**
  * game.js — Minigame de Pesca Primitiva (gh-pages)
- * Usa SpearFishing, CreatureProfile, SensorKit, AccessibilityLayer da ECJ lib.
+ * Usa TimedStrike, CreatureProfile, SensorKit, AccessibilityLayer da ECJ lib.
  */
 
-import { SpearFishing }       from "../../lib/SpearFishing.js";
+import { TimedStrike }       from "../../lib/TimedStrike.js";
 import { CreatureProfile }    from "../../lib/CreatureProfile.js";
 import { SensorKit }          from "../../lib/SensorKit.js";
 import { AccessibilityLayer } from "../../lib/AccessibilityLayer.js";
@@ -86,7 +86,7 @@ const a11y = AccessibilityLayer.create({ announcerId: "announcer" });
 function speak(text) { a11y.speak(text); }
 
 // ── Jogo ─────────────────────────────────────────────────────────────────────
-const game = SpearFishing.create({
+const game = TimedStrike.create({
   pool,
   defaultCooldown:      3000,
   defaultSpookCooldown: 7000,
