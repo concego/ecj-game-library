@@ -24,6 +24,7 @@ Biblioteca modular de mecânicas reutilizáveis para jogos acessíveis — parte
 | `TensionSystem` | Sistema de tensão jogador vs. oponente (pesca, cabo de guerra...) |
 | `CreatureProfile` | Sorteio ponderado de criaturas/oponentes |
 | `AccessibilityLayer` | Anúncios TalkBack/NVDA (speak) e vibração tátil |
+| `SpearFishing` | Pesca primitiva: vibração + tilt — lança, mão, rede etc. |
 
 ---
 
@@ -32,6 +33,8 @@ Biblioteca modular de mecânicas reutilizáveis para jogos acessíveis — parte
 ```
 lib/                  ← módulos da biblioteca (branch: main)
 games/                ← minigames de teste (branch: gh-pages)
+  fishing/            ← pesca com linha (SensorKit + TensionSystem)
+  spear/              ← pesca primitiva (SpearFishing)
 ```
 
 ---
@@ -44,6 +47,7 @@ import { StateMachine }       from "./lib/StateMachine.js";
 import { TensionSystem }      from "./lib/TensionSystem.js";
 import { CreatureProfile }    from "./lib/CreatureProfile.js";
 import { AccessibilityLayer } from "./lib/AccessibilityLayer.js";
+import { SpearFishing }       from "./lib/SpearFishing.js";
 ```
 
 ### Pré-requisito para AccessibilityLayer
@@ -51,7 +55,6 @@ import { AccessibilityLayer } from "./lib/AccessibilityLayer.js";
 O projeto deve criar o elemento `aria-live` no HTML — a lib não injeta estilo:
 
 ```html
-<!-- estilize .sr-only como quiser no seu CSS -->
 <div id="announcer" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
 ```
 
