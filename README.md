@@ -24,7 +24,7 @@ Biblioteca modular de mecânicas reutilizáveis para jogos acessíveis — parte
 | `TensionSystem` | Sistema de tensão jogador vs. oponente (pesca, cabo de guerra...) |
 | `CreatureProfile` | Sorteio ponderado de criaturas/oponentes |
 | `AccessibilityLayer` | Anúncios TalkBack/NVDA (speak) e vibração tátil |
-| `SpearFishing` | Pesca primitiva: vibração + tilt — lança, mão, rede etc. |
+| `TimedStrike` | Janela de oportunidade + reação: pesca primitiva, caça com lança, emboscada etc. |
 
 ---
 
@@ -34,7 +34,7 @@ Biblioteca modular de mecânicas reutilizáveis para jogos acessíveis — parte
 lib/                  ← módulos da biblioteca (branch: main)
 games/                ← minigames de teste (branch: gh-pages)
   fishing/            ← pesca com linha (SensorKit + TensionSystem)
-  spear/              ← pesca primitiva (SpearFishing)
+  spear/              ← pesca primitiva / caça (TimedStrike)
 ```
 
 ---
@@ -47,7 +47,7 @@ import { StateMachine }       from "./lib/StateMachine.js";
 import { TensionSystem }      from "./lib/TensionSystem.js";
 import { CreatureProfile }    from "./lib/CreatureProfile.js";
 import { AccessibilityLayer } from "./lib/AccessibilityLayer.js";
-import { SpearFishing }       from "./lib/SpearFishing.js";
+import { TimedStrike }        from "./lib/TimedStrike.js";
 ```
 
 ### Pré-requisito para AccessibilityLayer
