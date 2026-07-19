@@ -36,24 +36,29 @@ Biblioteca modular de mecânicas reutilizáveis para jogos acessíveis — parte
 | `TimerCountdown` | Temporizador regressivo com pausa, bônus de tempo e urgência |
 | `TiltCompass` | Tilt → direção cardinal (N/S/E/W) — vira o personagem na exploração de grid |
 | `GridMap` | Posição, direção, distância, cone de visão e detecção em grid 2D |
+| `ResourceNode` | Nós de recursos no grid: HP, ferramenta, drops ponderados, bioma, respawn |
 
 ---
 
 ## Arquitetura de jogo com grid
 
 ```
-EXPLORAÇÃO (TiltCompass + GridMap)
+EXPLORAÇÃO (TiltCompass + GridMap + ResourceNode)
   Tilt vira o personagem → N/S/E/W
   TalkBack navega o grid
   GridMap rastreia posição, direção e cone de visão
-  Inimigo no cone → evento "detect"
+  Nodes de recurso ancorados em células do grid
          ↓
   Player seleciona célula (dois toques TalkBack)
-  Guia de atalhos no rodapé → item ativo selecionado
+  Guia de atalhos no rodapé → item/ferramenta ativa
   GridMap calcula distância player → alvo
          ↓
-COMBATE (TensionSystem + TimedStrike + item ativo)
-  Intenção já definida pelo item ativo
+EXTRAÇÃO (ResourceNode + RhythmTilt)
+  ResourceNode verifica ferramenta, remove HP, sorteia drop
+  RhythmTilt executa a mecânica de coleta
+         ↓
+COMBATE (TensionSystem + TimedStrike)
+  Intenção definida pelo item ativo
   Minigame correspondente é lançado
   ScoreSystem e TimerCountdown integrados
 ```
@@ -86,51 +91,36 @@ import { ScoreSystem }        from "./lib/ScoreSystem.js";
 import { TimerCountdown }     from "./lib/TimerCountdown.js";
 import { TiltCompass }        from "./lib/TiltCompass.js";
 import { GridMap }            from "./lib/GridMap.js";
-```
-
-### Pré-requisito para AccessibilityLayer
-
-```html
-<div id="announcer" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+import { ResourceNode }       from "./lib/ResourceNode.js";
 ```
 
 ---
 
-## GridMap — referência rápida
+## ResourceNode — referência rápida
 
 ```js
-const map = GridMap.create({ cols: 10, rows: 10 });
-
-map.addEntity("player", { col: 0, row: 0 }, "E");
-map.addEntity("goblin", { col: 3, row: 0 }, "W");
-
-map.move("player", { col: 1, row: 0 }); // emite move, enter, leave
-map.turn("player", "N");                // emite turn
-
-map.distance("player", "goblin");       // 2 (Manhattan)
-map.inCone("goblin", "player", { range: 4, angle: 90 }); // true/false
-
-map.on("detect", ({ detector, target }) => { /* inimigo viu o player */ });
-map.on("cellselect", ({ cell, entities }) => { /* player clicou numa célula */ });
-
-map.selectCell({ col: 3, row: 0 }); // dispara cellselect
-```
-
-## TiltCompass — referência rápida
-
-```js
-const compass = TiltCompass.create({ threshold: 20, deadZoneMs: 300 });
-
-compass.on("turn", ({ direction, previous }) => {
-  map.turn("player", direction); // N/S/E/W
+// Registra um bioma (geração procedural)
+ResourceNode.registerBiome("forest", {
+  hp:           80,
+  requiredTool: "axe",
+  respawnMs:    30000,
+  drops: [
+    { item: "wood",        weight: 10, minPower: 0  },
+    { item: "hardwood",    weight: 3,  minPower: 40 },
+    { item: "rare_resin",  weight: 1,  minPower: 70 },
+  ],
 });
 
-compass.on("holding", ({ direction, progress }) => {
-  // feedback visual/sonoro do progresso do deadzone (0–1)
-});
+// Cria node a partir do bioma — pronto para geração procedural
+const tree = ResourceNode.fromBiome("forest", { cell: { col: 3, row: 2 } });
 
-compass.start(SensorKit); // conecta ao sensor
-// Teclado: A/W/S/D ou ←↑↓→ funcionam automaticamente
+tree.on("extracted", ({ item, power, hpRemaining }) => { /* drop sorteado */ });
+tree.on("depleted",  ({ cell }) => { /* remove do mapa visualmente */ });
+tree.on("respawned", ({ cell }) => { /* recoloca no mapa */ });
+
+// Extrai com ferramenta
+tree.extract({ id: "axe", power: 50 });  // power alto → drops melhores, menos tentativas
+tree.extract(null);                       // sem ferramenta → "failed" se requiredTool != null
 ```
 
 ---
