@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ECJ — Pesca</title>
+  <style>
+    body { font-family: sans-serif; max-width: 480px; margin: 2rem auto; padding: 1rem; text-align: center; }
+    #announcer { font-size: 1.4rem; margin: 2rem 0; min-height: 3rem; }
+    button { font-size: 1.1rem; padding: 1rem 2rem; border-radius: 8px;
+             background: #1a1a2e; color: #fff; border: none; cursor: pointer; }
+    button:focus { outline: 3px solid #e94560; }
+  </style>
+</head>
+<body>
+  <h1>🎣 Pesca — ECJ</h1>
+  <div id="announcer" aria-live="assertive" aria-atomic="true">Minigame em desenvolvimento.</div>
+  <button onclick="history.back()">← Voltar</button>
+
+  <script type="module">
+    import { SensorKit }          from "../../lib/SensorKit.js";
+    import { StateMachine }       from "../../lib/StateMachine.js";
+    import { TensionSystem }      from "../../lib/TensionSystem.js";
+    import { CreatureProfile }    from "../../lib/CreatureProfile.js";
+    import { AccessibilityLayer } from "../../lib/AccessibilityLayer.js";
+
+    // Minigame de pesca será implementado aqui
+    // usando os módulos da ECJ Game Library
+    console.log("[ECJ] Módulos carregados com sucesso.");
+  </script>
+</body>
+</html>
