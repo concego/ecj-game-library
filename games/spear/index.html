@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>ECJ — Pesca Primitiva 🏹</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: sans-serif;
+      background: #0d1f0d;
+      color: #e0e0e0;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px; height: 1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 0.5rem; text-align: center; }
+    #score-area { display: flex; gap: 2rem; margin-bottom: 1rem; font-size: 1rem; }
+    #state-label {
+      font-size: 1.2rem; font-weight: bold;
+      text-align: center; min-height: 2rem; margin-bottom: 0.5rem;
+    }
+    #hint-area {
+      font-size: 3rem; text-align: center;
+      min-height: 4rem; margin-bottom: 1rem;
+    }
+    #instructions {
+      font-size: 0.9rem; color: #aaa;
+      text-align: center; margin-bottom: 1rem; max-width: 320px;
+    }
+    button {
+      margin-top: 1rem; padding: 0.9rem 2.5rem; font-size: 1.1rem;
+      border-radius: 8px; background: #2e7d32; color: #fff; border: none; cursor: pointer;
+    }
+    button:focus { outline: 3px solid #a5d6a7; }
+    #btn-back {
+      background: none; color: #a5d6a7;
+      font-size: 1rem; text-decoration: underline; margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="announcer" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+  <h1>🏹 Pesca Primitiva — ECJ</h1>
+  <div id="score-area" aria-label="Pontuação">
+    <span>Pontos: <strong id="score">0</strong></span>
+    <span>Recorde: <strong id="best">0</strong></span>
+  </div>
+  <div id="state-label" aria-live="polite">Pressione Iniciar</div>
+  <div id="hint-area" aria-hidden="true">🏹</div>
+  <div id="instructions">
+    Sinta a vibração → incline o celular para frente para atacar.<br>
+    Desktop: Espaço para atacar.
+  </div>
+  <button id="btn-start">▶ Iniciar</button>
+  <button id="btn-back" onclick="history.back()">← Voltar ao menu</button>
+
+  <!-- Audio engine de teste (Web Audio API) — reutiliza o do fishing -->
+  <script type="module" src="../fishing/audio.js"></script>
+  <script type="module" src="game.js"></script>
+</body>
+</html>
