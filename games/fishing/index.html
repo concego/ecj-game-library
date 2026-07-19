@@ -2,31 +2,71 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ECJ — Pesca</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>ECJ — Pesca 🎣</title>
   <style>
-    body { font-family: sans-serif; max-width: 480px; margin: 2rem auto; padding: 1rem; text-align: center; }
-    #announcer { font-size: 1.4rem; margin: 2rem 0; min-height: 3rem; }
-    button { font-size: 1.1rem; padding: 1rem 2rem; border-radius: 8px;
-             background: #1a1a2e; color: #fff; border: none; cursor: pointer; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: sans-serif;
+      background: #0a1628;
+      color: #e0e0e0;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px; height: 1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 0.5rem; text-align: center; }
+    #score-area { display: flex; gap: 2rem; margin-bottom: 1rem; font-size: 1rem; }
+    #state-label { font-size: 1.2rem; font-weight: bold; text-align: center; min-height: 2rem; margin-bottom: 0.5rem; }
+    #hint-area { font-size: 2.5rem; text-align: center; min-height: 3.5rem; margin-bottom: 0.5rem; }
+    #tension-container {
+      width: 100%; max-width: 360px; height: 24px;
+      background: #1a2a40; border-radius: 12px; overflow: hidden; margin-bottom: 1rem;
+    }
+    #tension-container.hidden { visibility: hidden; }
+    #tension-bar {
+      height: 100%; width: 0%; border-radius: 12px;
+      transition: width 0.1s, background 0.3s;
+    }
+    #tension-bar.tension-low    { background: #4caf50; }
+    #tension-bar.tension-medium { background: #ff9800; }
+    #tension-bar.tension-high   { background: #f44336; }
+    #tension-bar.tension-danger { background: #b71c1c; animation: pulse 0.4s infinite alternate; }
+    @keyframes pulse { from { opacity: 1; } to { opacity: 0.5; } }
+    button {
+      margin-top: 1rem; padding: 0.9rem 2.5rem; font-size: 1.1rem;
+      border-radius: 8px; background: #1565c0; color: #fff; border: none; cursor: pointer;
+    }
     button:focus { outline: 3px solid #e94560; }
+    #btn-back { background: none; color: #90caf9; font-size: 1rem; text-decoration: underline; margin-top: 0.5rem; }
   </style>
 </head>
 <body>
+  <div id="announcer" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
   <h1>🎣 Pesca — ECJ</h1>
-  <div id="announcer" aria-live="assertive" aria-atomic="true">Minigame em desenvolvimento.</div>
-  <button onclick="history.back()">← Voltar</button>
-
-  <script type="module">
-    import { SensorKit }          from "../../lib/SensorKit.js";
-    import { StateMachine }       from "../../lib/StateMachine.js";
-    import { TensionSystem }      from "../../lib/TensionSystem.js";
-    import { CreatureProfile }    from "../../lib/CreatureProfile.js";
-    import { AccessibilityLayer } from "../../lib/AccessibilityLayer.js";
-
-    // Minigame de pesca será implementado aqui
-    // usando os módulos da ECJ Game Library
-    console.log("[ECJ] Módulos carregados com sucesso.");
-  </script>
+  <div id="score-area" aria-label="Pontuação">
+    <span>Pontos: <strong id="score">0</strong></span>
+    <span>Recorde: <strong id="best">0</strong></span>
+  </div>
+  <div id="state-label" aria-live="polite">Pressione Iniciar</div>
+  <div id="hint-area" aria-hidden="true">—</div>
+  <div id="tension-container" class="hidden"
+       role="progressbar" aria-label="Tensão da linha"
+       aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <div id="tension-bar" class="tension-low"></div>
+  </div>
+  <button id="btn-start">▶ Iniciar</button>
+  <button id="btn-back" onclick="history.back()">← Voltar ao menu</button>
+  <script type="module" src="audio.js"></script>
+  <script type="module" src="game.js"></script>
 </body>
 </html>
