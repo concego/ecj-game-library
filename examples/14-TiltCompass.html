@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TiltCompass — ECJ Game Library</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; }
+    button { font-size: 1rem; padding: 12px 20px; margin: 8px 4px; cursor: pointer; }
+    #compass { font-size: 3rem; text-align: center; margin: 16px 0; }
+    #status, #log { background: #111; color: #0f0; padding: 12px; font-family: monospace; border-radius: 4px; margin-top: 8px; min-height: 48px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  </style>
+</head>
+<body>
+  <h1>TiltCompass</h1>
+  <p>Tilt your device to navigate a grid: forward = North, back = South, left = West, right = East. On desktop, use buttons.</p>
+  <div id="announcer" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+
+  <button onclick="startSensor()">Start sensor</button>
+  <button onclick="simulate('N')">↑ North</button>
+  <button onclick="simulate('S')">↓ South</button>
+  <button onclick="simulate('W')">← West</button>
+  <button onclick="simulate('E')">→ East</button>
+
+  <div id="compass" aria-live="polite">⬆️</div>
+  <div id="status" aria-live="assertive">—</div>
+  <div id="log">—</div>
+
+  <script type="module">
+    import { TiltCompass } from "../lib/TiltCompass.js";
+    import { SensorKit }   from "../lib/SensorKit.js";
+
+    const compass = TiltCompass.create();
+    const sensor  = SensorKit.create({ tiltThreshold: 20 });
+
+    const ann     = document.getElementById("announcer");
+    const compEl  = document.getElementById("compass");
+    const status  = document.getElementById("status");
+    const logEl   = document.getElementById("log");
+
+    const icons = { N: "⬆️", S: "⬇️", W: "⬅️", E: "➡️", neutral: "●" };
+    const names = { N: "North", S: "South", W: "West", E: "East", neutral: "Neutral" };
+
+    function announce(msg) {
+      ann.textContent = "";
+      requestAnimationFrame(() => requestAnimationFrame(() => { ann.textContent = msg; }));
+    }
+
+    compass.on("direction", ({ direction }) => {
+      compEl.textContent = icons[direction] || "●";
+      status.textContent = `Direction: ${names[direction] || direction}`;
+      announce(names[direction] || direction);
+      logEl.textContent = `direction=${direction}`;
+    });
+
+    // Wire SensorKit → TiltCompass
+    sensor.on("tiltForward", () => compass.input("forward"));
+    sensor.on("tiltBack",    () => compass.input("back"));
+    sensor.on("tiltLeft",    () => compass.input("left"));
+    sensor.on("tiltRight",   () => compass.input("right"));
+    sensor.on("tiltNeutral", () => compass.input("neutral"));
+
+    window.startSensor = () => { sensor.start(); announce("Sensor started — tilt to navigate"); };
+
+    // Desktop simulation
+    const simMap = { N: "forward", S: "back", W: "left", E: "right" };
+    window.simulate = (dir) => compass.input(simMap[dir]);
+  </script>
+</body>
+</html>
