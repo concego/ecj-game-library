@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GridMap — ECJ Game Library</title>
+  <style>
+    body { font-family: sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; }
+    button { font-size: 1rem; padding: 10px 16px; margin: 4px; cursor: pointer; }
+    #status, #log { background: #111; color: #0f0; padding: 12px; font-family: monospace; border-radius: 4px; margin-top: 8px; min-height: 48px; }
+    #grid { display: grid; grid-template-columns: repeat(8, 40px); gap: 2px; margin: 12px 0; }
+    .cell { width: 40px; height: 40px; background: #1a1a1a; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .cell.player { background: #003300; }
+    .cell.wall   { background: #333; }
+    .cell.item   { background: #001a33; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  </style>
+</head>
+<body>
+  <h1>GridMap</h1>
+  <p>2D grid with position, direction, distance, and vision cone. Use arrow keys or buttons to move.</p>
+  <div id="announcer" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+
+  <div>
+    <button onclick="move('north')" aria-label="Move North">⬆ North</button>
+    <button onclick="move('south')" aria-label="Move South">⬇ South</button>
+    <button onclick="move('west')"  aria-label="Move West">⬅ West</button>
+    <button onclick="move('east')"  aria-label="Move East">➡ East</button>
+  </div>
+
+  <div id="grid" aria-hidden="true"></div>
+
+  <div id="status" aria-live="polite">—</div>
+  <div id="log">—</div>
+
+  <script type="module">
+    import { GridMap } from "../lib/GridMap.js";
+
+    const COLS = 8, ROWS = 8;
+    const map  = GridMap.create({ cols: COLS, rows: ROWS });
+
+    // Define walls and items
+    const walls = [{col:2,row:1},{col:2,row:2},{col:2,row:3},{col:5,row:4},{col:5,row:5},{col:5,row:6}];
+    const items = [{col:7,row:0,name:"Sword"},{col:0,row:7,name:"Potion"},{col:7,row:7,name:"Chest"}];
+    walls.forEach(w => map.setTile(w.col, w.row, { type: "wall", walkable: false }));
+    items.forEach(i => map.setTile(i.col, i.row, { type: "item", name: i.name, walkable: true }));
+
+    let playerPos = { col: 0, row: 0 };
+    map.setPlayer(playerPos.col, playerPos.row);
+
+    const ann      = document.getElementById("announcer");
+    const statusEl = document.getElementById("status");
+    const logEl    = document.getElementById("log");
+    const gridEl   = document.getElementById("grid");
+
+    function announce(msg) {
+      ann.textContent = "";
+      requestAnimationFrame(() => requestAnimationFrame(() => { ann.textContent = msg; }));
+    }
+
+    function renderGrid() {
+      gridEl.innerHTML = "";
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          const tile = map.getTile(c, r);
+          const isPlayer = (c === playerPos.col && r === playerPos.row);
+          if (isPlayer)            { cell.classList.add("player"); cell.textContent = "🧑"; }
+          else if (tile?.type === "wall") { cell.classList.add("wall");   cell.textContent = "🧱"; }
+          else if (tile?.type === "item") { cell.classList.add("item");   cell.textContent = "✨"; }
+          gridEl.appendChild(cell);
+        }
+      }
+    }
+
+    function updateStatus() {
+      const tile = map.getTile(playerPos.col, playerPos.row);
+      const neighbors = map.getNeighbors(playerPos.col, playerPos.row);
+      const blocked = Object.entries(neighbors)
+        .filter(([,t]) => t && t.walkable === false)
+        .map(([dir]) => dir).join(", ") || "none";
+
+      let msg = `Position: col ${playerPos.col}, row ${playerPos.row}`;
+      if (tile?.name) msg += ` | Found: ${tile.name}!`;
+      msg += ` | Blocked: ${blocked}`;
+      statusEl.textContent = msg;
+      announce(msg);
+    }
+
+    window.move = (dir) => {
+      const deltas = { north:[0,-1], south:[0,1], west:[-1,0], east:[1,0] };
+      const [dc, dr] = deltas[dir];
+      const nc = playerPos.col + dc;
+      const nr = playerPos.row + dr;
+
+      if (nc < 0 || nr < 0 || nc >= COLS || nr >= ROWS) {
+        announce("Can't move that way — edge of map");
+        logEl.textContent = "Hit map boundary";
+        return;
+      }
+      const tile = map.getTile(nc, nr);
+      if (tile && tile.walkable === false) {
+        announce("Blocked by wall");
+        logEl.textContent = "Blocked";
+        return;
+      }
+      playerPos = { col: nc, row: nr };
+      map.setPlayer(nc, nr);
+      renderGrid();
+      updateStatus();
+      logEl.textContent = `Moved ${dir} → col ${nc}, row ${nr}`;
+    };
+
+    // Arrow keys
+    document.addEventListener("keydown", e => {
+      const map2 = { ArrowUp:"north", ArrowDown:"south", ArrowLeft:"west", ArrowRight:"east" };
+      if (map2[e.key]) { e.preventDefault(); move(map2[e.key]); }
+    });
+
+    renderGrid();
+    updateStatus();
+  </script>
+</body>
+</html>
