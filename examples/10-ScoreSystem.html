@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ScoreSystem — ECJ Game Library</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; }
+    button { font-size: 1rem; padding: 12px 20px; margin: 8px 4px; cursor: pointer; }
+    #scoreboard, #log { background: #111; color: #0f0; padding: 12px; font-family: monospace; border-radius: 4px; margin-top: 8px; min-height: 48px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  </style>
+</head>
+<body>
+  <h1>ScoreSystem</h1>
+  <p>Score, high score (localStorage), combos, and multipliers.</p>
+  <div id="announcer" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+
+  <button onclick="addPoints(10)">+10 points</button>
+  <button onclick="addPoints(50)">+50 points</button>
+  <button onclick="combo()">Hit (combo)</button>
+  <button onclick="miss()">Miss (break combo)</button>
+  <button onclick="reset()">Reset score</button>
+
+  <div id="scoreboard" aria-live="polite">—</div>
+  <div id="log">—</div>
+
+  <script type="module">
+    import { ScoreSystem } from "../lib/ScoreSystem.js";
+
+    const score = ScoreSystem.create({
+      baseMultiplier:   1,
+      comboThresholds:  [3, 5, 10],
+      multiplierLevels: [1, 2, 3],
+      storageKey:       "ecj_example_highscore",
+    });
+
+    const ann      = document.getElementById("announcer");
+    const boardEl  = document.getElementById("scoreboard");
+    const logEl    = document.getElementById("log");
+
+    function announce(msg) {
+      ann.textContent = "";
+      requestAnimationFrame(() => requestAnimationFrame(() => { ann.textContent = msg; }));
+    }
+    function render() {
+      boardEl.textContent =
+        `Score: ${score.total()}  |  Combo: ${score.currentCombo()}  |  Multiplier: x${score.multiplier()}  |  High Score: ${score.highscore()}`;
+    }
+
+    score.on("score",      ({ points, total })          => { render(); logEl.textContent = `+${points} → total ${total}`; });
+    score.on("highscore",  ({ score: s })               => { render(); announce(`New high score! ${s}`); });
+    score.on("combo",      ({ combo, multiplier })      => { render(); announce(`Combo ${combo}! Multiplier x${multiplier}`); });
+    score.on("combobreak", ({ combo })                  => { render(); announce(`Combo broken at ${combo}`); });
+    score.on("reset",      ()                           => { render(); announce("Score reset"); });
+
+    window.addPoints = (pts) => { score.add(pts); announce(`${pts} points added`); };
+    window.combo     = ()    => { score.add(10); score.combo(); };
+    window.miss      = ()    => { score.breakCombo(); logEl.textContent = "combo broken"; render(); };
+    window.reset     = ()    => score.reset();
+
+    render();
+  </script>
+</body>
+</html>
