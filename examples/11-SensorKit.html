@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SensorKit — ECJ Game Library</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; }
+    button { font-size: 1rem; padding: 12px 20px; margin: 8px 4px; cursor: pointer; }
+    #status, #raw, #log { background: #111; color: #0f0; padding: 12px; font-family: monospace; border-radius: 4px; margin-top: 8px; min-height: 48px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  </style>
+</head>
+<body>
+  <h1>SensorKit</h1>
+  <p>Accelerometer, gyroscope, and shake detection. Open on a mobile device and tilt it to see events fire.</p>
+  <div id="announcer" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+
+  <button onclick="startSensor()">Start sensors</button>
+  <button onclick="stopSensor()">Stop sensors</button>
+
+  <h3>Current tilt event</h3>
+  <div id="status" aria-live="assertive">—</div>
+  <h3>Raw beta/gamma</h3>
+  <div id="raw" aria-live="off">—</div>
+  <h3>Log (last event)</h3>
+  <div id="log">—</div>
+
+  <script type="module">
+    import { SensorKit } from "../lib/SensorKit.js";
+
+    const sensor = SensorKit.create({
+      tiltThreshold: 20,
+      shakeThreshold: 15,
+    });
+
+    const ann    = document.getElementById("announcer");
+    const status = document.getElementById("status");
+    const raw    = document.getElementById("raw");
+    const logEl  = document.getElementById("log");
+
+    function announce(msg) {
+      ann.textContent = "";
+      requestAnimationFrame(() => requestAnimationFrame(() => { ann.textContent = msg; }));
+    }
+
+    const tiltEvents = ["tiltForward","tiltBack","tiltLeft","tiltRight","tiltNeutral"];
+    tiltEvents.forEach(evt => {
+      sensor.on(evt, (data) => {
+        status.textContent = evt;
+        announce(evt.replace("tilt","Tilted "));
+        logEl.textContent = JSON.stringify(data);
+      });
+    });
+
+    sensor.on("shake", (data) => {
+      status.textContent = "SHAKE!";
+      announce("Device shaken!");
+      logEl.textContent = JSON.stringify(data);
+    });
+
+    sensor.on("orientation", ({ beta, gamma }) => {
+      raw.textContent = `beta: ${beta?.toFixed(1)}°  gamma: ${gamma?.toFixed(1)}°`;
+    });
+
+    window.startSensor = () => { sensor.start(); announce("Sensors started"); };
+    window.stopSensor  = () => { sensor.stop();  announce("Sensors stopped"); };
+  </script>
+</body>
+</html>
