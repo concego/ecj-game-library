@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ResourceNode — ECJ Game Library</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; }
+    button { font-size: 1rem; padding: 12px 20px; margin: 8px 4px; cursor: pointer; }
+    #status, #log { background: #111; color: #0f0; padding: 12px; font-family: monospace; border-radius: 4px; margin-top: 8px; min-height: 48px; }
+    #inventory { background: #001a00; color: #0f0; padding: 12px; font-family: monospace; border-radius: 4px; margin-top: 8px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  </style>
+</head>
+<body>
+  <h1>ResourceNode</h1>
+  <p>Resource nodes with HP, tool requirement, and weighted item drops. Mine with the right tool to get loot.</p>
+  <div id="announcer" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+
+  <button onclick="hit('pickaxe')">Hit with Pickaxe</button>
+  <button onclick="hit('sword')">Hit with Sword (wrong tool)</button>
+  <button onclick="hitStrong()">Hit with Stone Pickaxe (2x)</button>
+  <button onclick="respawn()">Respawn node</button>
+
+  <div id="status" aria-live="polite">—</div>
+  <div id="log">—</div>
+  <h3>Inventory</h3>
+  <div id="inventory" aria-live="polite">Empty</div>
+
+  <script type="module">
+    import { ResourceNode } from "../lib/ResourceNode.js";
+
+    let node = makeNode();
+    const inv = {};
+    const ann      = document.getElementById("announcer");
+    const statusEl = document.getElementById("status");
+    const logEl    = document.getElementById("log");
+    const invEl    = document.getElementById("inventory");
+
+    function makeNode() {
+      const n = ResourceNode.create({
+        id:       "iron_vein",
+        name:     "Iron Vein",
+        hp:       30,
+        tool:     "pickaxe",
+        drops: [
+          { item: "Iron Ore",    weight: 50 },
+          { item: "Iron Chunk",  weight: 30 },
+          { item: "Gem Shard",   weight: 15 },
+          { item: "Raw Diamond", weight:  5 },
+        ],
+      });
+      n.on("hit",      ({ damage, hp, tool })  => { statusEl.textContent = `Hit! -${damage} HP | ${hp} remaining | tool: ${tool}`; });
+      n.on("drop",     ({ item })              => { addInv(item); logEl.textContent = `Dropped: ${item}`; });
+      n.on("depleted", ()                      => { statusEl.textContent = "Node depleted!"; announce("Iron Vein depleted"); });
+      n.on("wrong_tool",({ used, required })   => { statusEl.textContent = `Wrong tool: ${used} (need ${required})`; announce(`Need a ${required}`); });
+      n.on("respawned",()                      => { statusEl.textContent = "Node respawned!"; announce("Iron Vein respawned"); });
+      return n;
+    }
+
+    function announce(msg) {
+      ann.textContent = "";
+      requestAnimationFrame(() => requestAnimationFrame(() => { ann.textContent = msg; }));
+    }
+    function addInv(item) {
+      inv[item] = (inv[item] || 0) + 1;
+      invEl.textContent = Object.entries(inv).map(([k,v]) => `${k}: ${v}`).join(" | ") || "Empty";
+      announce(`Got ${item}!`);
+    }
+
+    window.hit = (tool) => {
+      if (node.isDepleted()) { statusEl.textContent = "Node is depleted — respawn first."; return; }
+      node.hit({ tool, damage: 10 });
+    };
+
+    window.hitStrong = () => {
+      if (node.isDepleted()) { statusEl.textContent = "Node is depleted — respawn first."; return; }
+      node.hit({ tool: "pickaxe", damage: 20 });
+    };
+
+    window.respawn = () => node.respawn();
+  </script>
+</body>
+</html>
