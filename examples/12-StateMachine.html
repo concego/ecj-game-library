@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>StateMachine — ECJ Game Library</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; }
+    button { font-size: 1rem; padding: 12px 20px; margin: 8px 4px; cursor: pointer; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    #state, #log { background: #111; color: #0f0; padding: 12px; font-family: monospace; border-radius: 4px; margin-top: 8px; min-height: 48px; }
+    #state { font-size: 1.8rem; text-align: center; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  </style>
+</head>
+<body>
+  <h1>StateMachine</h1>
+  <p>Finite state machine with integrated timers. Example: a player character with idle → combat → victory/defeat flow.</p>
+  <div id="announcer" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+
+  <button id="btn-start"   onclick="fsm.transition('start')">Start Battle</button>
+  <button id="btn-attack"  onclick="fsm.transition('attack')">Attack</button>
+  <button id="btn-defeat"  onclick="fsm.transition('defeat')">Take Fatal Hit</button>
+  <button id="btn-restart" onclick="fsm.transition('restart')">Restart</button>
+
+  <h3>Current State</h3>
+  <div id="state" aria-live="assertive">—</div>
+  <div id="log">—</div>
+
+  <script type="module">
+    import { StateMachine } from "../lib/StateMachine.js";
+
+    const fsm = StateMachine.create({
+      initial: "idle",
+      states: {
+        idle:    { transitions: { start: "combat" } },
+        combat:  { transitions: { attack: "victory", defeat: "defeated" } },
+        victory: { transitions: { restart: "idle" } },
+        defeated:{ transitions: { restart: "idle" } },
+      },
+    });
+
+    const ann    = document.getElementById("announcer");
+    const stateEl = document.getElementById("state");
+    const logEl  = document.getElementById("log");
+
+    const labels = {
+      idle:     "⚔️  Idle — Press Start Battle",
+      combat:   "🔥  In Combat!",
+      victory:  "🏆  Victory!",
+      defeated: "💀  Defeated",
+    };
+    const btns = {
+      "btn-start":   ["idle"],
+      "btn-attack":  ["combat"],
+      "btn-defeat":  ["combat"],
+      "btn-restart": ["victory","defeated"],
+    };
+
+    function announce(msg) {
+      ann.textContent = "";
+      requestAnimationFrame(() => requestAnimationFrame(() => { ann.textContent = msg; }));
+    }
+    function render(state) {
+      stateEl.textContent = labels[state] || state;
+      announce(labels[state] || state);
+      Object.entries(btns).forEach(([id, allowed]) => {
+        document.getElementById(id).disabled = !allowed.includes(state);
+      });
+    }
+
+    fsm.on("transition", ({ from, to, trigger }) => {
+      logEl.textContent = `${from} → ${to} (trigger: ${trigger})`;
+      render(to);
+    });
+
+    render(fsm.current());
+    window.fsm = fsm;
+  </script>
+</body>
+</html>
