@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TensionSystem — ECJ Game Library</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; }
+    button { font-size: 1rem; padding: 12px 20px; margin: 8px 4px; cursor: pointer; }
+    #bar-wrap { background: #333; height: 30px; border-radius: 4px; margin: 12px 0; overflow: hidden; position: relative; }
+    #bar       { height: 100%; width: 50%; background: #00c864; transition: width 0.15s; }
+    #marker    { position: absolute; top: 0; left: 50%; width: 3px; height: 100%; background: #fff; transform: translateX(-50%); }
+    #tension, #log { background: #111; color: #0f0; padding: 12px; font-family: monospace; border-radius: 4px; margin-top: 8px; min-height: 48px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  </style>
+</head>
+<body>
+  <h1>TensionSystem</h1>
+  <p>Player vs. opponent tension — fishing, tug-of-war, archery. Pull your side before the opponent pulls to theirs!</p>
+  <div id="announcer" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+
+  <button onclick="startGame()">Start</button>
+  <button onclick="pull()">Pull! (player)</button>
+  <button onclick="stopGame()">Stop</button>
+
+  <div id="bar-wrap" aria-hidden="true">
+    <div id="bar"></div>
+    <div id="marker"></div>
+  </div>
+
+  <div id="tension" aria-live="polite">—</div>
+  <div id="log">—</div>
+
+  <script type="module">
+    import { TensionSystem } from "../lib/TensionSystem.js";
+
+    const tension = TensionSystem.create({
+      initial:          0.5,   // start at center (0=player wins, 1=opponent wins)
+      playerPull:       0.08,
+      opponentPull:     0.04,
+      opponentInterval: 800,   // ms between opponent pulls
+      winThreshold:     0.05,  // player wins when tension ≤ this
+      loseThreshold:    0.95,  // player loses when tension ≥ this
+    });
+
+    const ann     = document.getElementById("announcer");
+    const bar     = document.getElementById("bar");
+    const tensEl  = document.getElementById("tension");
+    const logEl   = document.getElementById("log");
+
+    function announce(msg) {
+      ann.textContent = "";
+      requestAnimationFrame(() => requestAnimationFrame(() => { ann.textContent = msg; }));
+    }
+    function renderBar(value) {
+      // value 0=player side, 1=opponent side
+      bar.style.width = (value * 100) + "%";
+      bar.style.background = value < 0.35 ? "#00c864" : value > 0.65 ? "#c80000" : "#c8a000";
+    }
+
+    tension.on("update",   ({ value })            => { renderBar(value); tensEl.textContent = `Tension: ${(value*100).toFixed(0)}%`; });
+    tension.on("warning",  ({ side })             => { announce(`Warning — ${side} side pulling ahead!`); logEl.textContent = `warning: ${side}`; });
+    tension.on("win",      ()                     => { tensEl.textContent = "🎣 You win! Fish caught!"; announce("You win! Fish caught!"); });
+    tension.on("lose",     ()                     => { tensEl.textContent = "💀 You lost! Line snapped!"; announce("You lost! Line snapped!"); });
+
+    window.startGame = () => { tension.start(); announce("Tension game started — pull!"); };
+    window.stopGame  = () => { tension.stop(); };
+    window.pull      = () => { tension.pull("player"); announce("Pulling!"); };
+  </script>
+</body>
+</html>
