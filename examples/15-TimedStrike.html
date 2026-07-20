@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TimedStrike — ECJ Game Library</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; }
+    button { font-size: 1rem; padding: 12px 20px; margin: 8px 4px; cursor: pointer; }
+    #bar-wrap { background: #333; height: 28px; border-radius: 4px; margin: 12px 0; overflow: hidden; }
+    #bar       { height: 100%; width: 0%; background: #c86400; transition: width 0.05s linear; }
+    #status, #log { background: #111; color: #0f0; padding: 12px; font-family: monospace; border-radius: 4px; margin-top: 8px; min-height: 48px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  </style>
+</head>
+<body>
+  <h1>TimedStrike</h1>
+  <p>Opportunity window + reaction mechanic. A window opens — strike during it to score. Miss and you fail.</p>
+  <div id="announcer" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+
+  <button onclick="startRound()">Start round</button>
+  <button onclick="strike()" id="btn-strike" disabled>STRIKE!</button>
+
+  <div id="bar-wrap" aria-hidden="true"><div id="bar"></div></div>
+  <div id="status" aria-live="assertive">Press Start round</div>
+  <div id="log">—</div>
+
+  <script type="module">
+    import { TimedStrike } from "../lib/TimedStrike.js";
+
+    const game = TimedStrike.create({
+      windowMs:   1200,   // how long the strike window stays open
+      delayMs:    1500,   // delay before window opens
+    });
+
+    const ann       = document.getElementById("announcer");
+    const bar       = document.getElementById("bar");
+    const status    = document.getElementById("status");
+    const logEl     = document.getElementById("log");
+    const strikeBtn = document.getElementById("btn-strike");
+
+    let barInterval = null;
+
+    function announce(msg) {
+      ann.textContent = "";
+      requestAnimationFrame(() => requestAnimationFrame(() => { ann.textContent = msg; }));
+    }
+    function startBar(durationMs) {
+      clearInterval(barInterval);
+      const start = Date.now();
+      bar.style.width = "0%";
+      barInterval = setInterval(() => {
+        const pct = Math.min(100, ((Date.now()-start) / durationMs) * 100);
+        bar.style.width = pct + "%";
+        if (pct >= 100) clearInterval(barInterval);
+      }, 30);
+    }
+
+    game.on("waiting",  ({ delayMs })      => {
+      status.textContent = `Get ready... (${delayMs}ms)`;
+      strikeBtn.disabled = true;
+      announce("Get ready");
+    });
+    game.on("open",     ({ windowMs })     => {
+      status.textContent = "⚡ STRIKE NOW!";
+      strikeBtn.disabled = false;
+      startBar(windowMs);
+      announce("Strike now!");
+    });
+    game.on("hit",      ({ reactionMs })   => {
+      strikeBtn.disabled = true;
+      clearInterval(barInterval);
+      status.textContent = `✓ Hit! Reaction: ${reactionMs}ms`;
+      announce(`Hit! Reaction time ${reactionMs} milliseconds`);
+      logEl.textContent = `hit reactionMs=${reactionMs}`;
+    });
+    game.on("miss",     ()                 => {
+      strikeBtn.disabled = true;
+      clearInterval(barInterval);
+      status.textContent = "✗ Too slow!";
+      announce("Missed! Too slow");
+      logEl.textContent = "miss";
+    });
+    game.on("early",    ()                 => {
+      status.textContent = "✗ Too early!";
+      announce("Too early!");
+      logEl.textContent = "early";
+    });
+
+    window.startRound = () => game.start();
+    window.strike     = () => game.strike();
+  </script>
+</body>
+</html>
