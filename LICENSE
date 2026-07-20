@@ -1,0 +1,68 @@
+ECJ Game Library — Dual License
+Copyright (c) 2025 Anderson Carvalho / Eu Concego Jogar
+
+===============================================================================
+NON-COMMERCIAL LICENSE (free)
+===============================================================================
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to use,
+copy, modify, merge, and distribute the Software for NON-COMMERCIAL purposes
+only, subject to the following conditions:
+
+1. NON-COMMERCIAL USE means:
+   - Personal projects and learning
+   - Game jams (including entries with prize pools)
+   - Open source projects (source code publicly available)
+   - Academic and educational use
+   - Portfolio and demonstration projects
+
+2. COMMERCIAL USE (requires a paid license — see below) means:
+   - Any game or product sold, monetized, or distributed for a fee
+   - Games with in-app purchases or subscriptions
+   - Projects used in paid consulting or client work
+   - Internal tools developed for a commercial entity
+
+3. This copyright notice and this permission notice shall be included in all
+   copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+===============================================================================
+COMMERCIAL LICENSE
+===============================================================================
+
+For commercial use as defined above, a separate commercial license is required.
+
+To obtain a commercial license, please visit:
+  https://ko-fi.com/euconcego
+
+A commercial license grants you:
+  - All rights of the non-commercial license
+  - The right to use the Software in commercial products and services
+  - The right to distribute the Software as part of a commercial product
+    (compiled or bundled — source of the library must not be resold as-is)
+  - One license covers one commercial project
+
+The commercial license does NOT grant:
+  - The right to resell or sublicense the Software itself
+  - The right to remove copyright notices
+
+For volume licensing, studio licenses, or questions, contact:
+  euconcego@gmail.com
+
+===============================================================================
+ATTRIBUTION
+===============================================================================
+
+When using this library (commercial or non-commercial), attribution is
+appreciated but not required. If you do credit the library, please use:
+
+  "Built with ECJ Game Library by Eu Concego Jogar"
+  https://github.com/concego/ecj-game-library
