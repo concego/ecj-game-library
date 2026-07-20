@@ -1,77 +1,77 @@
 # ECJ Game Library 🐉
 
-Biblioteca modular de mecânicas reutilizáveis para jogos acessíveis — parte do projeto [Eu Concego Jogar](https://concego.github.io).
+Modular library of reusable mechanics for accessible games — part of the [Eu Concego Jogar](https://concego.github.io) project.
 
 ---
 
-## Regra de Ouro
+## Golden Rule
 
-> **A biblioteca não toca em áudio nem em visual.**
+> **The library does not touch audio or visuals.**
 >
-> - **Fica na lib:** lógica de mecânica, sensores, estados, tensão, criaturas, acessibilidade (anúncios e vibração).
-> - **Fica no projeto:** sons, sprites, CSS, animações, temas, paletas.
+> - **Lives in the lib:** mechanic logic, sensors, states, tension, creatures, accessibility (announcements and vibration).
+> - **Lives in the project:** sounds, sprites, CSS, animations, themes, palettes.
 >
-> Os módulos **emitem eventos**. O jogo ouve e decide o que fazer.
+> Modules **emit events**. The game listens and decides what to do.
 
-## Princípio de Movimento
+## Movement Principle
 
-> **A interação física não pode impedir o player de olhar para a tela.**
+> **Physical interaction must not prevent the player from looking at the screen.**
 >
-> Movimentos suaves e pontuais (tilt leve, shake único, vibração) são preferíveis a gestos contínuos e amplos.
+> Smooth, punctual movements (light tilt, single shake, vibration) are preferred over continuous and wide gestures.
 
 ---
 
-## Módulos
+## Modules
 
 ### ECJ Motion Systems
-*O coração da biblioteca — o que a diferencia de qualquer outra.*
+*The heart of the library — what sets it apart from everything else.*
 
-| Módulo | Descrição |
+| Module | Description |
 |---|---|
-| `SensorKit` | Acelerômetro, giroscópio e shake — browser e Capacitor |
-| `TensionSystem` | Tensão jogador vs. oponente: pesca, cabo de guerra, puxar porta pesada... |
-| `RhythmTilt` | Inclinação ritmada: mineração, remo, serrar, forjar, bombear... |
-| `TiltCompass` | Tilt → direção cardinal N/S/E/W — vira o personagem no grid |
-| `TimedStrike` | Janela de oportunidade + reação: caça, emboscada, pesca primitiva... |
-| `InteractionSequence` | Sequências de gestos: abrir fechaduras, lançar magia, rituais, armadilhas... |
+| `SensorKit` | Accelerometer, gyroscope and shake — browser and Capacitor |
+| `TensionSystem` | Player vs. opponent tension: fishing, tug-of-war, pulling a heavy door... |
+| `RhythmTilt` | Rhythmic tilt: mining, rowing, sawing, forging, pumping... |
+| `TiltCompass` | Tilt → cardinal direction N/S/E/W — turns the character on the grid |
+| `TimedStrike` | Opportunity window + reaction: hunting, ambush, primitive fishing... |
+| `InteractionSequence` | Gesture sequences: lock-picking, casting spells, rituals, traps... |
 
-### Mundo e Recursos
+### World and Resources
 
-| Módulo | Descrição |
+| Module | Description |
 |---|---|
-| `GridMap` | Posição, direção, distância, cone de visão e detecção em grid 2D |
-| `ResourceNode` | Nós de recurso: HP, ferramenta, drops ponderados, bioma, respawn |
-| `CreatureProfile` | Sorteio ponderado de criaturas/oponentes |
+| `GridMap` | Position, direction, distance, vision cone and detection on a 2D grid |
+| `ResourceNode` | Resource nodes: HP, tool requirement, weighted drops, biome, respawn |
+| `CreatureProfile` | Weighted random draw of creatures/opponents |
 
-### Sorte e Aleatoriedade
+### Luck and Randomness
 
-| Módulo | Descrição |
+| Module | Description |
 |---|---|
-| `CardDeck` | Baralho genérico: embaralha, compra, descarta, devolve |
-| `DiceRoller` | Dados configuráveis: qualquer face, quantidade, modificador, vantagem/desvantagem |
-| `Roulette` | Roleta com tilt: gira com tilt pra frente, para com segundo tilt + delay de desaceleração |
+| `CardDeck` | Generic deck: shuffle, draw, discard, return |
+| `DiceRoller` | Configurable dice: any faces, count, modifier, advantage/disadvantage |
+| `Roulette` | Tilt roulette: spin with tilt forward, stop with second tilt + deceleration delay |
 
-### Acessibilidade
+### Accessibility
 
-| Módulo | Descrição |
+| Module | Description |
 |---|---|
-| `AccessibilityLayer` | Anúncios TalkBack/NVDA (speak) e vibração tátil |
+| `AccessibilityLayer` | TalkBack/NVDA announcements (speak) and haptic feedback |
 
 ### Core Systems
-*Infraestrutura genérica — útil em qualquer jogo.*
+*Generic infrastructure — useful in any game.*
 
-| Módulo | Descrição |
+| Module | Description |
 |---|---|
-| `StateMachine` | Máquina de estados genérica com timers integrados |
-| `ScoreSystem` | Pontuação, highscore (localStorage), combos e multiplicadores |
-| `TimerCountdown` | Temporizador regressivo com pausa, bônus de tempo e urgência |
+| `StateMachine` | Generic finite state machine with integrated timers |
+| `ScoreSystem` | Score, high score (localStorage), combos and multipliers |
+| `TimerCountdown` | Countdown timer with pause, time bonus and urgency |
 
 ---
 
-## InteractionSequence — referência rápida
+## InteractionSequence — quick reference
 
 ```js
-// Sequência: shake → tilt_left → tilt_right (ex: abrir uma fechadura)
+// Sequence: shake → tilt_left → tilt_right (e.g. open a lock)
 const lock = InteractionSequence.create({
   sequence: [
     { gesture: "shake"      },
@@ -79,21 +79,21 @@ const lock = InteractionSequence.create({
     { gesture: "tilt_right", timeoutMs: 2000 },
   ],
   globalTimeoutMs: 6000,
-  strict: true,   // gesto errado = falha
+  strict: true,   // wrong gesture = failure
 });
 
-lock.on("started",   ()                       => { /* primeiro gesto correto */ });
-lock.on("progress",  ({ step, total })        => { /* feedback de progresso  */ });
-lock.on("completed", ({ elapsed })            => { /* porta aberta!          */ });
-lock.on("failed",    ({ expected, received }) => { /* gesto errado           */ });
-lock.on("timeout",   ({ step })               => { /* tempo esgotado         */ });
+lock.on("started",   ()                       => { /* first correct gesture */ });
+lock.on("progress",  ({ step, total })        => { /* progress feedback     */ });
+lock.on("completed", ({ elapsed })            => { /* door open!            */ });
+lock.on("failed",    ({ expected, received }) => { /* wrong gesture         */ });
+lock.on("timeout",   ({ step })               => { /* time ran out          */ });
 
-// Integração com SensorKit
+// SensorKit integration
 SensorKit.on("shake",     () => lock.input("shake"));
 SensorKit.on("tiltLeft",  () => lock.input("tilt_left"));
 SensorKit.on("tiltRight", () => lock.input("tilt_right"));
 
-// Atalho para sequências simples
+// Shorthand for simple sequences
 const combo = InteractionSequence.fromGestures(
   ["tilt_forward", "shake", "tilt_left"],
   { globalTimeoutMs: 5000 }
@@ -102,46 +102,46 @@ const combo = InteractionSequence.fromGestures(
 
 ---
 
-## Arquitetura de jogo com grid
+## Game architecture with grid
 
 ```
-EXPLORAÇÃO (TiltCompass + GridMap + ResourceNode)
-  Tilt vira o personagem → N/S/E/W
-  TalkBack navega o grid
-  GridMap rastreia posição, direção e cone de visão
-  Nodes de recurso ancorados em células do grid
+EXPLORATION (TiltCompass + GridMap + ResourceNode)
+  Tilt turns the character → N/S/E/W
+  TalkBack navigates the grid
+  GridMap tracks position, direction and vision cone
+  Resource nodes anchored to grid cells
          ↓
-  Player seleciona célula (dois toques TalkBack)
-  Guia de atalhos no rodapé → item/ferramenta ativa
-  GridMap calcula distância player → alvo
+  Player selects cell (TalkBack double-tap)
+  Shortcut bar at the bottom → active item/tool
+  GridMap calculates distance player → target
          ↓
-EXTRAÇÃO (ResourceNode + RhythmTilt)
-  ResourceNode verifica ferramenta, remove HP, sorteia drop
-  RhythmTilt executa a mecânica de coleta
+EXTRACTION (ResourceNode + RhythmTilt)
+  ResourceNode checks tool, removes HP, draws drop
+  RhythmTilt runs the collection mechanic
          ↓
-COMBATE / INTERAÇÃO (TensionSystem + TimedStrike + InteractionSequence)
-  Tensão, janelas de reação ou sequências de gestos
-  ScoreSystem e TimerCountdown integrados
+COMBAT / INTERACTION (TensionSystem + TimedStrike + InteractionSequence)
+  Tension, reaction windows or gesture sequences
+  ScoreSystem and TimerCountdown integrated
          ↓
-RECOMPENSA (CardDeck | DiceRoller | Roulette)
-  Loot sorteado via carta, dado ou roleta com tilt
-```
-
----
-
-## Estrutura
-
-```
-lib/                  ← módulos da biblioteca (branch: main)
-games/                ← minigames de teste (branch: gh-pages)
-  fishing/            ← pesca com linha (SensorKit + TensionSystem)
-  spear/              ← pesca primitiva / caça (TimedStrike)
-  mining/             ← mineração (RhythmTilt)
+REWARD (CardDeck | DiceRoller | Roulette)
+  Loot drawn via card, die or tilt roulette
 ```
 
 ---
 
-## Uso
+## Structure
+
+```
+lib/                  ← library modules (branch: main)
+games/                ← test minigames (branch: gh-pages)
+  fishing/            ← line fishing (SensorKit + TensionSystem)
+  spear/              ← primitive fishing / hunting (TimedStrike)
+  mining/             ← mining (RhythmTilt)
+```
+
+---
+
+## Usage
 
 ```js
 import { SensorKit }             from "./lib/SensorKit.js";
@@ -162,7 +162,7 @@ import { ScoreSystem }           from "./lib/ScoreSystem.js";
 import { TimerCountdown }        from "./lib/TimerCountdown.js";
 ```
 
-### Pré-requisito para AccessibilityLayer
+### Requirement for AccessibilityLayer
 
 ```html
 <div id="announcer" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
@@ -170,38 +170,7 @@ import { TimerCountdown }        from "./lib/TimerCountdown.js";
 
 ---
 
-## Compatibilidade
-
-- Browser (GitHub Pages)
-- Android APK via [Capacitor](https://capacitorjs.com)
-- TalkBack (Android) e NVDA (Windows)
-
----
-
-## Licença / License
-
-### 🇧🇷 Português
-
-Esta biblioteca usa **licença dual**.
-
-**Uso gratuito** (não comercial):
-- Projetos pessoais e aprendizado
-- Game jams (mesmo com premiação)
-- Projetos open source
-- Uso acadêmico e educacional
-- Portfólio e demonstrações
-
-**Uso comercial** (requer licença paga):
-- Jogos ou produtos vendidos, monetizados ou distribuídos por taxa
-- Jogos com compras in-app ou assinaturas
-- Projetos usados em consultoria paga ou trabalho para clientes
-- Ferramentas internas de empresas comerciais
-
-👉 Adquira a licença comercial em: [ko-fi.com/euconcego](https://ko-fi.com/euconcego)
-
-Dúvidas? euconcego@gmail.com
-
----
+## License / Licença
 
 ### 🇺🇸 English
 
@@ -226,4 +195,35 @@ Questions? euconcego@gmail.com
 
 ---
 
+### 🇧🇷 Português
+
+Esta biblioteca usa **licença dual**.
+
+**Uso gratuito** (não comercial):
+- Projetos pessoais e aprendizado
+- Game jams (mesmo com premiação)
+- Projetos open source
+- Uso acadêmico e educacional
+- Portfólio e demonstrações
+
+**Uso comercial** (requer licença paga):
+- Jogos ou produtos vendidos, monetizados ou distribuídos por taxa
+- Jogos com compras in-app ou assinaturas
+- Projetos usados em consultoria paga ou trabalho para clientes
+- Ferramentas internas de empresas comerciais
+
+👉 Adquira a licença comercial em: [ko-fi.com/euconcego](https://ko-fi.com/euconcego)
+
+Dúvidas? euconcego@gmail.com
+
+---
+
 See [LICENSE](./LICENSE) for the full legal text.
+
+---
+
+## Compatibility
+
+- Browser (GitHub Pages)
+- Android APK via [Capacitor](https://capacitorjs.com)
+- TalkBack (Android) and NVDA (Windows)
