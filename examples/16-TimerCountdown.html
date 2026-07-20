@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TimerCountdown — ECJ Game Library</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; }
+    button { font-size: 1rem; padding: 12px 20px; margin: 8px 4px; cursor: pointer; }
+    #display { font-size: 3rem; text-align: center; font-family: monospace; color: #00c864; margin: 12px 0; }
+    #display.urgent { color: #c80000; }
+    #bar-wrap { background: #333; height: 16px; border-radius: 4px; overflow: hidden; }
+    #bar       { height: 100%; width: 100%; background: #00c864; transition: width 0.5s linear, background 0.5s; }
+    #status, #log { background: #111; color: #0f0; padding: 12px; font-family: monospace; border-radius: 4px; margin-top: 8px; min-height: 48px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  </style>
+</head>
+<body>
+  <h1>TimerCountdown</h1>
+  <p>Countdown timer with pause, resume, bonus time, and urgency threshold announcement.</p>
+  <div id="announcer" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+
+  <div id="display" aria-live="off">30</div>
+  <div id="bar-wrap" aria-hidden="true"><div id="bar"></div></div>
+
+  <button onclick="t.start()">Start</button>
+  <button onclick="t.pause()">Pause</button>
+  <button onclick="t.resume()">Resume</button>
+  <button onclick="t.addTime(5)">+5s bonus</button>
+  <button onclick="t.reset()">Reset</button>
+
+  <div id="status" aria-live="assertive">—</div>
+  <div id="log">—</div>
+
+  <script type="module">
+    import { TimerCountdown } from "../lib/TimerCountdown.js";
+
+    const timer = TimerCountdown.create({
+      seconds:          30,
+      tickMs:           500,
+      urgencyThreshold: 10,
+    });
+
+    const ann     = document.getElementById("announcer");
+    const display = document.getElementById("display");
+    const bar     = document.getElementById("bar");
+    const status  = document.getElementById("status");
+    const logEl   = document.getElementById("log");
+
+    function announce(msg) {
+      ann.textContent = "";
+      requestAnimationFrame(() => requestAnimationFrame(() => { ann.textContent = msg; }));
+    }
+
+    timer.on("tick",    ({ remaining, pct })   => {
+      display.textContent = remaining;
+      bar.style.width     = (pct * 100) + "%";
+      bar.style.background = pct < 0.33 ? "#c80000" : pct < 0.6 ? "#c8a000" : "#00c864";
+    });
+    timer.on("urgency", ({ remaining })        => {
+      display.classList.add("urgent");
+      status.textContent = `⚠️ Hurry! ${remaining}s left!`;
+      announce(`Warning! ${remaining} seconds remaining`);
+      logEl.textContent = `urgency at ${remaining}s`;
+    });
+    timer.on("expired", ()                     => {
+      display.textContent = "0";
+      bar.style.width = "0%";
+      status.textContent = "⏰ Time's up!";
+      announce("Time is up!");
+      logEl.textContent = "expired";
+    });
+    timer.on("paused",  ()                     => { status.textContent = "Paused"; announce("Timer paused"); });
+    timer.on("resumed", ()                     => { status.textContent = "Resumed"; announce("Timer resumed"); });
+    timer.on("added",   ({ added, remaining }) => { announce(`${added} seconds added. ${remaining} remaining`); logEl.textContent = `+${added}s → ${remaining}s`; });
+    timer.on("reset",   ({ total })            => { display.textContent = total; display.classList.remove("urgent"); bar.style.width = "100%"; status.textContent = "Reset"; announce("Timer reset"); });
+
+    window.t = timer;
+  </script>
+</body>
+</html>
