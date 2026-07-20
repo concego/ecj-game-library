@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>InteractionSequence — ECJ Game Library</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; }
+    button { font-size: 1rem; padding: 12px 20px; margin: 8px 4px; cursor: pointer; }
+    #status, #log { background: #111; color: #0f0; padding: 12px; font-family: monospace; border-radius: 4px; margin-top: 8px; min-height: 48px; }
+    #progress { font-size: 2rem; letter-spacing: 4px; margin: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  </style>
+</head>
+<body>
+  <h1>InteractionSequence</h1>
+  <p>Gesture sequence recognition. Lock-picking sequence: Shake → Tilt Left → Tilt Right. Each button sends one gesture.</p>
+  <div id="announcer" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+
+  <p><strong>Sequence:</strong> Shake → Tilt Left → Tilt Right</p>
+  <div id="progress" aria-live="polite">○ ○ ○</div>
+
+  <button onclick="send('shake')">Shake</button>
+  <button onclick="send('tilt_left')">Tilt Left</button>
+  <button onclick="send('tilt_right')">Tilt Right</button>
+  <button onclick="reset()">Reset</button>
+
+  <div id="status" aria-live="assertive">Waiting for first gesture...</div>
+  <div id="log">—</div>
+
+  <script type="module">
+    import { InteractionSequence } from "../lib/InteractionSequence.js";
+
+    const seq = InteractionSequence.create({
+      sequence: [
+        { gesture: "shake",      timeoutMs: 3000 },
+        { gesture: "tilt_left",  timeoutMs: 3000 },
+        { gesture: "tilt_right", timeoutMs: 3000 },
+      ],
+      strict: true,
+    });
+
+    const icons  = ["○", "○", "○"];
+    const ann    = document.getElementById("announcer");
+    const prog   = document.getElementById("progress");
+    const status = document.getElementById("status");
+    const logEl  = document.getElementById("log");
+
+    function announce(msg) {
+      ann.textContent = "";
+      requestAnimationFrame(() => requestAnimationFrame(() => { ann.textContent = msg; }));
+    }
+    function renderProgress() { prog.textContent = icons.join(" "); }
+
+    seq.on("started",   ()                          => { status.textContent = "Sequence started!"; logEl.textContent = "started"; });
+    seq.on("progress",  ({ step, total, gesture })  => {
+      icons[step] = "●";
+      renderProgress();
+      status.textContent = `Step ${step + 1} of ${total} — gesture: ${gesture} ✓`;
+      announce(`${gesture} accepted. Step ${step + 1} of ${total}`);
+      logEl.textContent = `progress step=${step}`;
+    });
+    seq.on("completed", ({ elapsed })               => {
+      icons.fill("●"); renderProgress();
+      status.textContent = `🔓 Lock opened! (${elapsed}ms)`;
+      announce("Lock opened! Sequence complete!");
+      logEl.textContent = `completed in ${elapsed}ms`;
+    });
+    seq.on("failed",    ({ expected, received })    => {
+      icons.fill("○"); renderProgress();
+      status.textContent = `✗ Wrong! Expected ${expected}, got ${received}`;
+      announce(`Wrong gesture. Expected ${expected}`);
+      logEl.textContent = `failed expected=${expected} got=${received}`;
+    });
+    seq.on("timeout",   ({ step })                  => {
+      icons.fill("○"); renderProgress();
+      status.textContent = `⏰ Timeout at step ${step + 1}`;
+      announce(`Time ran out at step ${step + 1}`);
+      logEl.textContent = `timeout step=${step}`;
+    });
+    seq.on("reset",     ()                          => {
+      icons.fill("○"); renderProgress();
+      status.textContent = "Reset. Try again.";
+      logEl.textContent = "reset";
+    });
+
+    window.send  = (g) => seq.input(g);
+    window.reset = ()  => seq.reset();
+  </script>
+</body>
+</html>
