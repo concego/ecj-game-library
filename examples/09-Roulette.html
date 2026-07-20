@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Roulette — ECJ Game Library</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; }
+    button { font-size: 1rem; padding: 12px 20px; margin: 8px 4px; cursor: pointer; }
+    #status, #log { background: #111; color: #0f0; padding: 12px; font-family: monospace; border-radius: 4px; margin-top: 8px; min-height: 48px; }
+    #slots { font-size: 1.5rem; letter-spacing: 8px; margin: 12px 0; color: #00c864; font-family: monospace; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  </style>
+</head>
+<body>
+  <h1>Roulette</h1>
+  <p>Tilt roulette with deceleration physics. Tilt forward to spin, forward again to stop. On desktop, use buttons.</p>
+  <div id="announcer" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+
+  <button onclick="r.spin()">Spin</button>
+  <button onclick="r.stop()">Stop</button>
+  <button onclick="r.reset()">Reset</button>
+  <p><em>Or tilt forward to spin, forward again to stop.</em></p>
+
+  <div id="slots" aria-live="polite">[ — ]</div>
+  <div id="status" aria-live="assertive">Ready to spin</div>
+  <div id="log">—</div>
+
+  <script type="module">
+    import { Roulette } from "../lib/Roulette.js";
+    import { SensorKit } from "../lib/SensorKit.js";
+
+    const roulette = Roulette.create({
+      slots:        ["⚔️ Attack +10", "🛡️ Block", "💀 Miss", "💎 Gem x2", "🔥 Fire +20", "❤️ Heal"],
+      spinDuration: 2000,
+    });
+
+    const ann    = document.getElementById("announcer");
+    const slots  = document.getElementById("slots");
+    const status = document.getElementById("status");
+    const logEl  = document.getElementById("log");
+
+    function announce(msg) {
+      ann.textContent = "";
+      requestAnimationFrame(() => requestAnimationFrame(() => { ann.textContent = msg; }));
+    }
+
+    roulette.on("spinning", ()                         => {
+      status.textContent = "Spinning...";
+      announce("Roulette spinning");
+    });
+    roulette.on("tick",     ({ slot })                 => {
+      slots.textContent = `[ ${slot} ]`;
+    });
+    roulette.on("stopped",  ({ slot, index })          => {
+      slots.textContent = `[ ${slot} ]`;
+      status.textContent = `Result: ${slot}`;
+      announce(`Roulette stopped on ${slot}`);
+      logEl.textContent = `index=${index}`;
+    });
+    roulette.on("reset",    ()                         => {
+      slots.textContent = "[ — ]";
+      status.textContent = "Ready";
+      logEl.textContent = "reset";
+    });
+
+    // SensorKit integration (mobile)
+    const sensor = SensorKit.create();
+    sensor.on("tiltForward", () => roulette.input("forward"));
+    sensor.start();
+
+    window.r = roulette;
+  </script>
+</body>
+</html>
