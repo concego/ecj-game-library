@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AccessibilityLayer — ECJ Game Library</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+    button { font-size: 1rem; padding: 12px 20px; margin: 8px 4px; cursor: pointer; }
+    #log { background: #111; color: #0f0; padding: 12px; font-family: monospace; min-height: 80px; margin-top: 16px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>AccessibilityLayer</h1>
+  <p>Screen reader announcements and haptic feedback. Click a button — TalkBack/NVDA will read the message aloud.</p>
+
+  <!-- Required: aria-live region managed by AccessibilityLayer -->
+  <div id="announcer" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+
+  <button onclick="a11y.speak('Fish hooked! Pull now!')">speak: Fish hooked</button>
+  <button onclick="a11y.speak('You caught a Trout! Score +50')">speak: Caught Trout</button>
+  <button onclick="a11y.vibrate('bite')">vibrate: bite</button>
+  <button onclick="a11y.vibrate('snap')">vibrate: snap</button>
+  <button onclick="a11y.vibrate('caught')">vibrate: caught</button>
+  <button onclick="a11y.vibrate('warning')">vibrate: warning</button>
+  <button onclick="demo()">Full demo (speak + vibrate)</button>
+
+  <div id="log">Waiting...</div>
+
+  <script type="module">
+    import { AccessibilityLayer } from "../lib/AccessibilityLayer.js";
+
+    const a11y = AccessibilityLayer.create({ announcerId: "announcer" });
+    window.a11y = a11y;
+
+    const log = document.getElementById("log");
+    function print(msg) { log.textContent = msg; }
+
+    // Patch speak to also show in log
+    const _origSpeak = a11y.speak.bind(a11y);
+    a11y.speak = (text) => { _origSpeak(text); print("speak: " + text); };
+
+    window.demo = () => {
+      a11y.speak("Critical hit! Dragon defeated!");
+      a11y.vibrate("caught");
+      print("speak + vibrate(caught) fired");
+    };
+  </script>
+</body>
+</html>
