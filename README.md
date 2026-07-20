@@ -178,6 +178,52 @@ import { TimerCountdown }        from "./lib/TimerCountdown.js";
 
 ---
 
-## Licença
+## Licença / License
 
-MIT
+### 🇧🇷 Português
+
+Esta biblioteca usa **licença dual**.
+
+**Uso gratuito** (não comercial):
+- Projetos pessoais e aprendizado
+- Game jams (mesmo com premiação)
+- Projetos open source
+- Uso acadêmico e educacional
+- Portfólio e demonstrações
+
+**Uso comercial** (requer licença paga):
+- Jogos ou produtos vendidos, monetizados ou distribuídos por taxa
+- Jogos com compras in-app ou assinaturas
+- Projetos usados em consultoria paga ou trabalho para clientes
+- Ferramentas internas de empresas comerciais
+
+👉 Adquira a licença comercial em: [ko-fi.com/euconcego](https://ko-fi.com/euconcego)
+
+Dúvidas? euconcego@gmail.com
+
+---
+
+### 🇺🇸 English
+
+This library uses a **dual license**.
+
+**Free use** (non-commercial):
+- Personal projects and learning
+- Game jams (including entries with prize pools)
+- Open source projects
+- Academic and educational use
+- Portfolio and demonstration projects
+
+**Commercial use** (requires a paid license):
+- Any game or product sold, monetized, or distributed for a fee
+- Games with in-app purchases or subscriptions
+- Projects used in paid consulting or client work
+- Internal tools developed for a commercial entity
+
+👉 Get a commercial license at: [ko-fi.com/euconcego](https://ko-fi.com/euconcego)
+
+Questions? euconcego@gmail.com
+
+---
+
+See [LICENSE](./LICENSE) for the full legal text.
