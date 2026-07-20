@@ -1,0 +1,52 @@
+{
+  "name": "ecj-game-library",
+  "version": "1.0.0",
+  "description": "Modular pure-logic toolkit for building accessible games in HTML/JS. No audio, no visuals — mechanics emit events; your game decides what to do.",
+  "main": "lib/index.js",
+  "type": "module",
+  "exports": {
+    "./AccessibilityLayer": "./lib/AccessibilityLayer.js",
+    "./CardDeck": "./lib/CardDeck.js",
+    "./CreatureProfile": "./lib/CreatureProfile.js",
+    "./DiceRoller": "./lib/DiceRoller.js",
+    "./GridMap": "./lib/GridMap.js",
+    "./InteractionSequence": "./lib/InteractionSequence.js",
+    "./ResourceNode": "./lib/ResourceNode.js",
+    "./RhythmTilt": "./lib/RhythmTilt.js",
+    "./Roulette": "./lib/Roulette.js",
+    "./ScoreSystem": "./lib/ScoreSystem.js",
+    "./SensorKit": "./lib/SensorKit.js",
+    "./StateMachine": "./lib/StateMachine.js",
+    "./TensionSystem": "./lib/TensionSystem.js",
+    "./TiltCompass": "./lib/TiltCompass.js",
+    "./TimedStrike": "./lib/TimedStrike.js",
+    "./TimerCountdown": "./lib/TimerCountdown.js"
+  },
+  "keywords": [
+    "game",
+    "accessible",
+    "accessibility",
+    "blind",
+    "audiogame",
+    "game-library",
+    "html5",
+    "javascript",
+    "talkback",
+    "nvda",
+    "game-mechanics",
+    "modular"
+  ],
+  "author": "Anderson Carvalho <euconcego@gmail.com> (https://github.com/concego)",
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/concego/ecj-game-library.git"
+  },
+  "homepage": "https://github.com/concego/ecj-game-library#readme",
+  "bugs": {
+    "url": "https://github.com/concego/ecj-game-library/issues"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}
