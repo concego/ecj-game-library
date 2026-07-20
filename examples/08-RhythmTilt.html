@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RhythmTilt — ECJ Game Library</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; }
+    button { font-size: 1rem; padding: 12px 20px; margin: 8px 4px; cursor: pointer; }
+    #status, #log { background: #111; color: #0f0; padding: 12px; font-family: monospace; border-radius: 4px; margin-top: 8px; min-height: 48px; }
+    #meter { height: 24px; background: #333; border-radius: 4px; margin: 8px 0; overflow: hidden; }
+    #bar   { height: 100%; width: 0%; background: #00c864; transition: width 0.1s; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  </style>
+</head>
+<body>
+  <h1>RhythmTilt</h1>
+  <p>Rhythmic tilt mechanic for mining, rowing, forging. Tilt in the correct direction when prompted. On desktop, use the buttons below.</p>
+  <div id="announcer" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+
+  <button onclick="startGame()">Start</button>
+  <button onclick="sendTilt('forward')">Tilt Forward</button>
+  <button onclick="sendTilt('back')">Tilt Back</button>
+  <button onclick="stopGame()">Stop</button>
+
+  <div id="meter" aria-hidden="true"><div id="bar"></div></div>
+  <div id="status" aria-live="assertive">Press Start</div>
+  <div id="log">—</div>
+
+  <script type="module">
+    import { RhythmTilt } from "../lib/RhythmTilt.js";
+
+    const game = RhythmTilt.create({
+      sequence:    ["forward", "back", "forward", "forward", "back"],
+      windowMs:    1200,
+      totalRounds: 5,
+    });
+
+    const ann    = document.getElementById("announcer");
+    const status = document.getElementById("status");
+    const bar    = document.getElementById("bar");
+    const logEl  = document.getElementById("log");
+
+    function announce(msg) {
+      ann.textContent = "";
+      requestAnimationFrame(() => requestAnimationFrame(() => { ann.textContent = msg; }));
+    }
+
+    game.on("prompt",   ({ direction, round, total }) => {
+      status.textContent = `Round ${round}/${total} — Tilt ${direction.toUpperCase()}!`;
+      announce(`Tilt ${direction}`);
+      bar.style.background = direction === "forward" ? "#00c864" : "#c86400";
+    });
+    game.on("hit",      ({ round, score })            => {
+      logEl.textContent = `Hit! Round ${round} | Score ${score}`;
+      bar.style.width = Math.min(100, score * 4) + "%";
+      announce(`Perfect! Score ${score}`);
+    });
+    game.on("miss",     ({ round, score })            => {
+      logEl.textContent = `Miss! Round ${round} | Score ${score}`;
+      announce(`Missed! Score ${score}`);
+    });
+    game.on("complete", ({ score, hits, misses })     => {
+      status.textContent = `Complete! Score: ${score} | Hits: ${hits} | Misses: ${misses}`;
+      announce(`Game over! Final score ${score}, hits ${hits}, misses ${misses}`);
+    });
+
+    window.startGame = () => { game.start(); announce("Game started"); };
+    window.stopGame  = () => { game.stop(); status.textContent = "Stopped."; };
+    window.sendTilt  = (dir) => game.input(dir);
+  </script>
+</body>
+</html>
