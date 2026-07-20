@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DiceRoller — ECJ Game Library</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; }
+    button { font-size: 1rem; padding: 12px 20px; margin: 8px 4px; cursor: pointer; }
+    #result, #log { background: #111; color: #0f0; padding: 12px; font-family: monospace; border-radius: 4px; margin-top: 8px; min-height: 48px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  </style>
+</head>
+<body>
+  <h1>DiceRoller</h1>
+  <p>Configurable dice: any face count, multiple dice, modifiers, advantage/disadvantage.</p>
+  <div id="announcer" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+
+  <button onclick="roll('d6')">Roll d6</button>
+  <button onclick="roll('d20')">Roll d20</button>
+  <button onclick="roll('2d6')">Roll 2d6</button>
+  <button onclick="roll('d20adv')">d20 Advantage</button>
+  <button onclick="roll('d20dis')">d20 Disadvantage</button>
+  <button onclick="roll('attack')">Attack roll (d20+5)</button>
+  <button onclick="roll('damage')">Damage (2d8+3)</button>
+
+  <h3>Result</h3>
+  <div id="result" aria-live="polite">—</div>
+  <h3>Log</h3>
+  <div id="log">—</div>
+
+  <script type="module">
+    import { DiceRoller } from "../lib/DiceRoller.js";
+
+    const resultEl = document.getElementById("result");
+    const logEl    = document.getElementById("log");
+    const ann      = document.getElementById("announcer");
+
+    function announce(msg) {
+      ann.textContent = "";
+      requestAnimationFrame(() => requestAnimationFrame(() => { ann.textContent = msg; }));
+    }
+
+    const configs = {
+      d6:      { faces: 6,  count: 1, modifier: 0 },
+      d20:     { faces: 20, count: 1, modifier: 0 },
+      "2d6":   { faces: 6,  count: 2, modifier: 0 },
+      d20adv:  { faces: 20, count: 1, modifier: 0, advantage: true  },
+      d20dis:  { faces: 20, count: 1, modifier: 0, disadvantage: true },
+      attack:  { faces: 20, count: 1, modifier: 5 },
+      damage:  { faces: 8,  count: 2, modifier: 3 },
+    };
+
+    window.roll = (key) => {
+      const cfg  = configs[key];
+      const dice = DiceRoller.create(cfg);
+      const res  = dice.roll();
+
+      resultEl.textContent =
+        `Total: ${res.total}  |  Rolls: [${res.rolls.join(", ")}]` +
+        (cfg.modifier ? `  Modifier: +${cfg.modifier}` : "") +
+        (cfg.advantage ? "  (Advantage)" : "") +
+        (cfg.disadvantage ? "  (Disadvantage)" : "");
+
+      const label = key.replace("adv","(Advantage)").replace("dis","(Disadvantage)");
+      announce(`${label} result: ${res.total}. Rolls: ${res.rolls.join(", ")}`);
+      logEl.textContent = JSON.stringify(res);
+    };
+  </script>
+</body>
+</html>
