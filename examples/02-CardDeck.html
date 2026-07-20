@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CardDeck — ECJ Game Library</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; }
+    button { font-size: 1rem; padding: 12px 20px; margin: 8px 4px; cursor: pointer; }
+    #hand, #log { background: #111; color: #0f0; padding: 12px; font-family: monospace; border-radius: 4px; margin-top: 8px; min-height: 48px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  </style>
+</head>
+<body>
+  <h1>CardDeck</h1>
+  <p>Generic deck: shuffle, draw, discard, and return. Works for any card game, item draw, or loot system.</p>
+  <div id="announcer" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+
+  <button onclick="draw()">Draw card</button>
+  <button onclick="drawMany()">Draw 3 cards</button>
+  <button onclick="discard()">Discard hand</button>
+  <button onclick="shuffle()">Shuffle deck</button>
+  <button onclick="reset()">Reset</button>
+
+  <h3>Hand</h3>
+  <div id="hand" aria-live="polite">—</div>
+  <h3>Log</h3>
+  <div id="log">—</div>
+
+  <script type="module">
+    import { CardDeck } from "../lib/CardDeck.js";
+
+    const deck = CardDeck.create({
+      cards: [
+        { id: "fire",    name: "Fire Spell",    damage: 30 },
+        { id: "ice",     name: "Ice Bolt",       damage: 20 },
+        { id: "heal",    name: "Healing Potion", heal: 50  },
+        { id: "shield",  name: "Iron Shield",    block: 40 },
+        { id: "thunder", name: "Thunder Strike", damage: 45 },
+        { id: "poison",  name: "Poison Dart",    damage: 15 },
+        { id: "wind",    name: "Wind Slash",     damage: 25 },
+        { id: "earth",   name: "Stone Wall",     block: 60 },
+      ],
+    });
+
+    deck.on("drawn",    ({ card, remaining }) => log(`Drew: ${card.name} | ${remaining} left in deck`));
+    deck.on("empty",    ()                    => log("Deck is empty!"));
+    deck.on("shuffled", ({ total })           => log(`Deck shuffled — ${total} cards`));
+    deck.on("reset",    ({ total })           => log(`Deck reset — ${total} cards`));
+
+    let hand = [];
+    const handEl = document.getElementById("hand");
+    const logEl  = document.getElementById("log");
+    const ann    = document.getElementById("announcer");
+
+    function log(msg) { logEl.textContent = msg; }
+    function announce(msg) {
+      ann.textContent = "";
+      requestAnimationFrame(() => requestAnimationFrame(() => { ann.textContent = msg; }));
+    }
+    function renderHand() {
+      handEl.textContent = hand.length ? hand.map(c => c.name).join(", ") : "Empty";
+    }
+
+    window.draw = () => {
+      const card = deck.draw();
+      if (card) { hand.push(card); renderHand(); announce(`Drew ${card.name}`); }
+    };
+
+    window.drawMany = () => {
+      const cards = deck.drawMany(3);
+      hand.push(...cards);
+      renderHand();
+      announce(`Drew ${cards.length} cards: ${cards.map(c => c.name).join(", ")}`);
+    };
+
+    window.discard = () => {
+      hand.forEach(c => deck.discard(c));
+      hand = [];
+      renderHand();
+      announce("Hand discarded");
+    };
+
+    window.shuffle = () => { deck.shuffle(); announce("Deck shuffled"); };
+    window.reset   = () => { deck.reset();   hand = []; renderHand(); announce("Deck reset"); };
+  </script>
+</body>
+</html>
