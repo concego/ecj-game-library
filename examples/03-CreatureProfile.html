@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CreatureProfile — ECJ Game Library</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; }
+    button { font-size: 1rem; padding: 12px 20px; margin: 8px 4px; cursor: pointer; }
+    #result, #log { background: #111; color: #0f0; padding: 12px; font-family: monospace; border-radius: 4px; margin-top: 8px; min-height: 48px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  </style>
+</head>
+<body>
+  <h1>CreatureProfile</h1>
+  <p>Weighted random creature draw for encounters, spawns, and loot tables. Rarity is controlled by weight.</p>
+  <div id="announcer" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+
+  <button onclick="encounter()">Random encounter</button>
+  <button onclick="rareEncounter()">Rare-only pool</button>
+  <button onclick="multi()">Draw 5 creatures</button>
+
+  <h3>Encounter</h3>
+  <div id="result" aria-live="polite">—</div>
+  <h3>Log</h3>
+  <div id="log">—</div>
+
+  <script type="module">
+    import { CreatureProfile } from "../lib/CreatureProfile.js";
+
+    // General pool: high weight = common, low weight = rare
+    const pool = CreatureProfile.create({
+      creatures: [
+        { id: "rat",    name: "Giant Rat",    hp: 20,  xp: 5,   weight: 40 },
+        { id: "goblin", name: "Goblin",       hp: 40,  xp: 15,  weight: 30 },
+        { id: "orc",    name: "Orc Warrior",  hp: 80,  xp: 40,  weight: 15 },
+        { id: "troll",  name: "Cave Troll",   hp: 150, xp: 80,  weight: 10 },
+        { id: "dragon", name: "Shadow Dragon",hp: 500, xp: 500, weight: 5  },
+      ],
+    });
+
+    // Rare-only pool (boss room)
+    const bossPool = CreatureProfile.create({
+      creatures: [
+        { id: "lich",   name: "Undead Lich",  hp: 600, xp: 800, weight: 3 },
+        { id: "dragon", name: "Elder Dragon", hp: 900, xp: 999, weight: 1 },
+      ],
+    });
+
+    const resultEl = document.getElementById("result");
+    const logEl    = document.getElementById("log");
+    const ann      = document.getElementById("announcer");
+
+    function log(msg) { logEl.textContent = msg; }
+    function announce(msg) {
+      ann.textContent = "";
+      requestAnimationFrame(() => requestAnimationFrame(() => { ann.textContent = msg; }));
+    }
+
+    window.encounter = () => {
+      const c = pool.draw();
+      resultEl.textContent = `${c.name} — HP: ${c.hp} | XP: ${c.xp}`;
+      announce(`Encountered ${c.name}! HP ${c.hp}, XP reward ${c.xp}`);
+      log(`Drew: ${c.id} (weight ${pool.getCreatures().find(x=>x.id===c.id)?.weight})`);
+    };
+
+    window.rareEncounter = () => {
+      const c = bossPool.draw();
+      resultEl.textContent = `BOSS: ${c.name} — HP: ${c.hp} | XP: ${c.xp}`;
+      announce(`Boss encounter! ${c.name}! HP ${c.hp}`);
+      log(`Boss pool drew: ${c.id}`);
+    };
+
+    window.multi = () => {
+      const draws = Array.from({ length: 5 }, () => pool.draw());
+      resultEl.textContent = draws.map(c => c.name).join(", ");
+      announce(`5 creatures: ${draws.map(c => c.name).join(", ")}`);
+      log("Drew 5");
+    };
+  </script>
+</body>
+</html>
